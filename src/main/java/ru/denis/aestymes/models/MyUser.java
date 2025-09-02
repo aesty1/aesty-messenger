@@ -1,15 +1,14 @@
 package ru.denis.aestymes.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class MyUser {
@@ -43,4 +42,5 @@ public class MyUser {
 
     @Column(name = "is_verified")
     private boolean isVerified;
+
 }

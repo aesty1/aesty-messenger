@@ -1,10 +1,7 @@
 package ru.denis.aestymes.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.denis.aestymes.dtos.ChatMemberRole;
 
 import java.time.LocalDateTime;
@@ -13,7 +10,8 @@ import java.time.LocalDateTime;
 @Table(name = "chat_members", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"chat_id", "user_id"})
 })
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

@@ -1,10 +1,7 @@
 package ru.denis.aestymes.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Fetch;
 
 import java.time.LocalDateTime;
@@ -13,7 +10,8 @@ import java.time.LocalDateTime;
 @Table(name = "message_reads", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"message_id", "user_id"})
 })
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

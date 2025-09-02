@@ -1,17 +1,15 @@
 package ru.denis.aestymes.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.denis.aestymes.dtos.MessageType;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "messages")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -34,7 +32,7 @@ public class Message {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "message_type")
-    private MessageType messageType = MessageType.TEXT;
+    private MessageType messageType = MessageType.text;
 
     @Column(name = "media_url")
     private String mediaUrl;

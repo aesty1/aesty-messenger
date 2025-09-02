@@ -1,9 +1,7 @@
 package ru.denis.aestymes.models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,7 +9,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "chats")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Chat {
@@ -36,7 +35,7 @@ public class Chat {
     private Boolean isPrivate = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "created_by")
+    @JoinColumn(name = "created_by")
     private MyUser createdBy;
 
     @Column(name = "created_at")

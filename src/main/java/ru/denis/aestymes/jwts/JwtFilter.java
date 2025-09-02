@@ -32,7 +32,6 @@ public class JwtFilter extends OncePerRequestFilter {
         String jwtToken = null;
         if(authHeader == null || !authHeader.startsWith("Bearer ")) {
             String cookieJwt = getTokenFromCookies(request);
-            System.out.println(cookieJwt);
             if(cookieJwt != null) {
                 jwtToken = cookieJwt;
             } else {
