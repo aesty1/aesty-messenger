@@ -3,11 +3,16 @@ package ru.denis.aestymes.services;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.denis.aestymes.dtos.ChangePasswordDto;
+import ru.denis.aestymes.dtos.UserDTO;
 import ru.denis.aestymes.jwts.JwtProvider;
 import ru.denis.aestymes.models.MyUser;
 import ru.denis.aestymes.repositories.MyUserRepository;
@@ -24,6 +29,10 @@ public class MyUserService implements UserDetailsService {
 
     @Autowired
     private JwtProvider jwtProvider;
+
+    @Autowired
+    @Lazy
+    private PasswordEncoder passwordEncoder;
 
     public void save(MyUser myUser) {
         myUserRepository.save(myUser);
@@ -72,5 +81,33 @@ public class MyUserService implements UserDetailsService {
 
     public MyUser getUserById(Long id) {
         return myUserRepository.getMyUserById(id);
+    }
+
+    public void updateProfile(Long user_id, UserDTO dto) {
+        MyUser user = myUserRepository.getMyUserById(user_id);
+
+        if(user != null) {
+            user.setName(dto.getName());
+            user.setUsername(dto.getUsername());
+            user.setAvatarUrl(dto.getAvatarUrl());
+
+            myUserRepository.save(user);
+        } else {
+            throw new UsernameNotFoundException("User not found");
+        }
+    }
+
+    public void changePassword(ChangePasswordDto passwordDto, MyUser user) {
+        if(!passwordEncoder.matches(passwordDto.getOldPassword(), user.getPasswordHash())) {
+            throw new BadCredentialsException("Wrong old password");
+        }
+
+        if(!passwordDto.getNewPassword().equals(passwordDto.getConfirmPassword())) {
+            throw new BadCredentialsException("Confirm password is not the same");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(passwordDto.getNewPassword()));
+
+        myUserRepository.save(user);
     }
 }

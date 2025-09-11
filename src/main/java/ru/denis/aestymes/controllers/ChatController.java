@@ -13,9 +13,11 @@ import ru.denis.aestymes.services.ChatService;
 import ru.denis.aestymes.services.MessageService;
 import ru.denis.aestymes.services.MyUserService;
 
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import javax.validation.constraints.Min;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -35,12 +37,23 @@ public class ChatController {
     private MessageService messageService;
 
     @GetMapping("/chats")
-    public String getAllChats(Model model, HttpServletRequest request) {
-        model.addAttribute("chats", chatService.getUserChats(myUserService.getCurrentUserId(request)));
-        model.addAttribute("nickname", myUserService.getUserById(myUserService.getCurrentUserId(request)));
+    public String getChats(Model model, HttpServletRequest request)  {
+        List<Chat> chats = chatService.getUserChats(myUserService.getCurrentUserId(request));
+        model.addAttribute("chats", chats);
 
-        return "chat/chats";
+        model.addAttribute("nickname", myUserService.getUserById(myUserService.getCurrentUserId(request)));
+        model.addAttribute("currentUserId", myUserService.getCurrentUserId(request));
+        model.addAttribute("currentUser", myUserService.getUserById(myUserService.getCurrentUserId(request)));
+
+        return "chat/allChats";
     }
+
+//    @GetMapping("/chats")
+//    public String getAllChats(Model model, HttpServletRequest request) {
+//
+//
+//        return "chat/chats";
+//    }
 
     @GetMapping("/chats/{chatId}")
     public String getChat(@PathVariable Long chatId, Model model, HttpServletRequest request) {
