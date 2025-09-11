@@ -1,5 +1,6 @@
 package ru.denis.aestymes.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -48,6 +49,7 @@ public class Chat {
     private String avatarUrl;
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<ChatMember> members = new ArrayList<>();
 
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
