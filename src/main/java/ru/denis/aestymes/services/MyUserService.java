@@ -20,6 +20,7 @@ import ru.denis.aestymes.repositories.MyUserRepository;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class MyUserService implements UserDetailsService {
@@ -34,8 +35,16 @@ public class MyUserService implements UserDetailsService {
     @Lazy
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private EmailService emailService;
+
     public void save(MyUser myUser) {
+        String confirmationToken = UUID.randomUUID().toString();
+
+        myUser.setConfirmationToken(confirmationToken);
+
         myUserRepository.save(myUser);
+        emailService.sendConfirmationEmail(myUser.getEmail(), confirmationToken);
     }
 
     public MyUser getMyUser(Long id) {
@@ -109,5 +118,20 @@ public class MyUserService implements UserDetailsService {
         user.setPasswordHash(passwordEncoder.encode(passwordDto.getNewPassword()));
 
         myUserRepository.save(user);
+    }
+
+    public boolean confirmUser(String confirmationToken) {
+        MyUser user = myUserRepository.findByConfirmationToken(confirmationToken);
+
+        if(user != null) {
+            user.setVerified(true);
+            user.setConfirmationToken(null);
+
+            myUserRepository.save(user);
+
+            return true;
+        } else {
+            return false;
+        }
     }
 }

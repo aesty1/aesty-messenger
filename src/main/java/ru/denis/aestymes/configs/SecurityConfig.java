@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login")
                 )
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/login", "/register", "'authenticate/**", "/js/**").permitAll()
+                        .requestMatchers("/login", "/register", "'authenticate/**", "/js/**", "/confirm-account").permitAll()
                         .anyRequest().authenticated()
                 )
 //                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)

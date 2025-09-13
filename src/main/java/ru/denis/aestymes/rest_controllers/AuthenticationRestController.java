@@ -10,10 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import ru.denis.aestymes.dtos.LoginForm;
 import ru.denis.aestymes.jwts.JwtProvider;
@@ -67,5 +64,16 @@ public class AuthenticationRestController {
         myUserService.save(user);
 
         return new RedirectView("/login");
+    }
+
+    @GetMapping("/confirmation-token")
+    public ResponseEntity<?> confirm(@RequestParam("token") String token) {
+        boolean isConfirm = myUserService.confirmUser(token);
+
+        if(isConfirm) {
+            return ResponseEntity.ok("Your profile was been confirmed");
+        } else {
+            return ResponseEntity.badRequest().body("Wring confirmation token");
+        }
     }
 }
