@@ -19,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import ru.denis.aestymes.jwts.JwtFilter;
 import ru.denis.aestymes.jwts.JwtLogoutHandler;
+import ru.denis.aestymes.services.MyOauthUserService;
 import ru.denis.aestymes.services.MyUserService;
 
 @Configuration
@@ -33,6 +34,8 @@ public class SecurityConfig {
     @Autowired
     private MyUserService myUserService;
 
+    @Autowired
+    private MyOauthUserService myOauthUserService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -45,6 +48,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers("/login", "/register", "'authenticate/**", "/js/**", "/confirm-account").permitAll()
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth -> oauth
+                        .loginPage("/login")
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(myOauthUserService)
+                        )
+                        .defaultSuccessUrl("/oauth-success", true)
                 )
 //                .formLogin(AbstractAuthenticationFilterConfigurer::permitAll)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

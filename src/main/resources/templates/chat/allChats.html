@@ -431,7 +431,10 @@
             </div>
         </div>
 
-        <div class="search-container">
+        <button class="show-search-btn" onclick="toggleSearch()">Показать поиск</button>
+
+
+        <div class="search-container" id="searchContainer" style="display: none;">
             <input type="text" class="search-input" placeholder="Search">
         </div>
 
@@ -517,6 +520,21 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script>
+    function toggleSearch() {
+        const searchContainer = document.getElementById('searchContainer');
+        const button = document.querySelector('.show-search-btn');
+
+        // Переключаем видимость контейнера поиска
+        if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
+            searchContainer.style.display = 'block';
+            button.textContent = 'Скрыть поиск';
+        } else {
+            searchContainer.style.display = 'none';
+            button.textContent = 'Показать поиск';
+        }
+    }
+</script>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const emojiButton = document.getElementById('emoji-button');

@@ -27,7 +27,19 @@ public class EmailService {
         message.setTo(to);
         message.setFrom(fromEmail);
         message.setSubject("Aesty messenger register confirmation");
-        message.setText("To complete the registration, please click the link below" + confirmationLink);
+        message.setText("To complete the registration, please click the link below " + confirmationLink);
+
+        mailSender.send(message);
+    }
+
+    public void sendPasswordEmail(String to, String password) {
+
+        SimpleMailMessage message = new SimpleMailMessage();
+
+        message.setTo(to);
+        message.setFrom(fromEmail);
+        message.setSubject("Aesty messenger register password");
+        message.setText("Your password for aesty messenger: " + password);
 
         mailSender.send(message);
     }

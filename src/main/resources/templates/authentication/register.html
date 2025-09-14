@@ -132,6 +132,11 @@
             <div class="text-center mt-3">
                 <p>Already have an account? <a th:href="@{/login}" class="login-link">Sign In</a></p>
             </div>
+            <div class="oauth-login row social-login g-2 mb-4" >
+                <a th:href="@{/oauth2/authorization/google}" class="btn btn-google btn btn-outline-primary w-100">
+                    <i class="fab fa-google me-2"></i> Google
+                </a>
+            </div>
         </form>
     </div>
 </div>
