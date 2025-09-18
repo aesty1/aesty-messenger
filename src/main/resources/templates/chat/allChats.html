@@ -160,6 +160,8 @@
         }
 
         .chats-list {
+            display: flex;
+            flex-direction: column;
             flex: 1;
             overflow-y: auto;
         }
@@ -414,6 +416,132 @@
         .sleep_type {
             visibility: hidden;
         }
+        .search-container {
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .search-input {
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn {
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            color: #6c757d;
+        }
+
+        .icon-btn:hover {
+            color: #0d6efd;
+            transform: scale(1.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; /* Выравнивание по правому краю */
+            gap: 10px;
+        }
+
+        .search-expanded {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+        }
+        /* Стили для синей круглой кнопки с плюсом */
+        .add-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            align-items: end;
+
+            font-size: 1.5rem;
+            margin-top: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+
+
+        .buttons-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .content-area {
+            min-height: 200px;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: right;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #f8f9fa;
+        }
+        .add-chat-container {
+            display: flex;
+            flex-direction: row;
+            margin-left: auto; /* Помещаем справа */
+            margin-top: auto; /* Помещаем снизу */
+        }
+
+        .floating-button {
+            background-color: #007bff; /* Синий цвет */
+            border: none;
+            border-radius: 50%; /* Делаем круглой */
+            width: 60px;
+            height: 60px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+
+        }
+
+        .floating-button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .create-chat-input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            width: 200px;
+        }
+
+        .create-chat-input:focus {
+            border-color: #007bff;
+        }
+
+        .create-chat-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .create-chat-button:hover {
+            background-color: #0056b3;
+        }
 
     </style>
 </head>
@@ -423,22 +551,39 @@
     <div class="chats-sidebar active">
         <div class="sidebar-header">
             <div class="user-info">
-                <img class="avatar" th:src="${nickname.getAvatarUrl()}"/>
-                <h5 class="mb-0" th:text="${nickname.getName()}">John Doe</h5>
+                <img class="avatar" th:src="${currentUser.getAvatarUrl()}"/>
+                <h5 class="mb-0" th:text="${currentUser.getName()}">John Doe</h5>
             </div>
             <div class="sidebar-actions">
                 <a th:href="@{/profile/edit}" class="chat-name">Update profile</a>
             </div>
         </div>
 
-        <button class="show-search-btn" onclick="toggleSearch()">Показать поиск</button>
+<!--        <div class="search-wrapper">-->
+<!--            &lt;!&ndash; Кнопка поиска (лупа) &ndash;&gt;-->
+<!--            <button id="searchBtn" class="icon-btn"   onclick="showChatsSearch()">-->
+<!--                <i class="bi bi-search"></i>-->
+<!--            </button>-->
+
+<!--            <button id="searchBtn2" class="icon-btn" onclick="showUsersSearch()">-->
+<!--                <i class="fa-solid fa-user-plus"></i>-->
+<!--            </button>-->
+
+<!--            &lt;!&ndash; Кнопка назад (стрелка) &ndash;&gt;-->
+<!--            <button id="backBtn" class="icon-btn hidden" onclick="hideSearch()">-->
+<!--                <i class="bi bi-arrow-left"></i>-->
+<!--            </button>-->
+
+<!--            &lt;!&ndash; Контейнер поиска &ndash;&gt;-->
+<!--            <div class="search-container" id="searchContainer">-->
+<!--                <input type="text" class="form-control chats-search-input" placeholder="Search chat...">-->
+<!--                <button type="button" class="chats-search-button">Search</button>-->
+<!--            </div>-->
+
+<!--        </div>-->
 
 
-        <div class="search-container" id="searchContainer" style="display: none;">
-            <input type="text" class="search-input" placeholder="Search">
-        </div>
-
-        <div class="chats-list" >
+        <div class="chats-list" id="contentArea">
             <!-- Chat items -->
             <button style="background: none;
     border: none;
@@ -449,16 +594,35 @@
                 <div class="chat-avatar">ES</div>
                 <input class="chatIdInput" type="hidden" th:value="${chat.getId()}">
                 <div class="chat-info">
-                    <div class="chat-name current-receiver-name" th:text="${chat.getMembers().getFirst().getUser().getName() == nickname}
+                    <div class="chat-name current-receiver-name" th:text="${chat.getMembers().getFirst().getUser().getUsername() == nickname}
       ? ${chat.getMembers().getLast().getUser().getName()}
       : ${chat.getMembers().getFirst().getUser().getName()}">Emma Smith</div>
 <!--                    <div class="chat-preview">See you tomorrow!</div>-->
                 </div>
                 <div class="chat-meta">
-                    <div class="chat-time" th:text="${#temporals.format(chat.getLastMessage().getCreatedAt(), 'HH:mm')}">14:30</div>
+                    <div class="chat-time" th:if="${chat.getLastMessage() != null}"
+                         th:text="${#temporals.format(chat.getLastMessage().getCreatedAt(), 'HH:mm')}">
+                        14:30
+                    </div>
+                    <div class="chat-time" th:unless="${chat.getLastMessage() != null}">
+                        --
+                    </div>
 <!--                    <div class="unread-count">3</div>-->
                 </div>
             </button>
+            <div class="add-chat-container">
+                <!-- Ваш существующий контент -->
+                <div>
+                    <input type="text" class="create-chat-input" style="display: none;">
+                    <button type="button" class="create-chat-button" style="display: none;">Create chat</button>
+                </div>
+
+                <!-- Круглая кнопка в правом нижнем углу -->
+                <button type="button" class="floating-button" id="floatingBtn">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
         </div>
     </div>
 
@@ -520,21 +684,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.0/dist/sockjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-<script>
-    function toggleSearch() {
-        const searchContainer = document.getElementById('searchContainer');
-        const button = document.querySelector('.show-search-btn');
-
-        // Переключаем видимость контейнера поиска
-        if (searchContainer.style.display === 'none' || searchContainer.style.display === '') {
-            searchContainer.style.display = 'block';
-            button.textContent = 'Скрыть поиск';
-        } else {
-            searchContainer.style.display = 'none';
-            button.textContent = 'Показать поиск';
-        }
-    }
-</script>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const emojiButton = document.getElementById('emoji-button');
@@ -579,7 +728,61 @@
 </script>
 <script>
     /*<![CDATA[*/
+
+    function showChatsSearch() {
+        // Скрываем кнопку поиска
+        document.getElementById('searchBtn').classList.add('hidden');
+        document.getElementById('searchBtn2').classList.add('hidden');
+
+        // Показываем кнопку назад
+        document.getElementById('backBtn').classList.remove('hidden');
+
+        // Показываем поле поиска
+        const searchContainer = document.getElementById('searchContainer');
+        searchContainer.style.display = 'block';
+
+        // Фокусируемся на поле ввода
+        setTimeout(() => {
+            searchContainer.querySelector('.search-input').focus();
+        }, 10);
+    }
+
+    function showUsersSearch() {
+        // Скрываем кнопку поиска
+        document.getElementById('chats-search-button').classList.add('hidden');
+        document.getElementById('searchBtn2').classList.add('hidden');
+
+        // Показываем кнопку назад
+        document.getElementById('backBtn').classList.remove('hidden');
+
+        // Показываем поле поиска
+        const searchContainer = document.getElementById('searchContainer');
+        searchContainer.style.display = 'block';
+
+        // Фокусируемся на поле ввода
+        setTimeout(() => {
+            searchContainer.querySelector('.search-input').focus();
+        }, 10);
+    }
+
+    function hideSearch() {
+        // Показываем кнопку поиска
+        document.getElementById('chats-search-button').classList.remove('hidden');
+        document.getElementById('searchBtn2').classList.remove('hidden');
+
+        // Скрываем кнопку назад
+        document.getElementById('backBtn').classList.add('hidden');
+
+        // Скрываем поле поиска
+        document.getElementById('searchContainer').style.display = 'none';
+
+        // Очищаем поле ввода
+        document.querySelector('.search-input').value = '';
+    }
+
+    /*<![CDATA[*/
     const currentUserId = [[${currentUserId}]];
+    const nickname = "[[${nickname}]]";
     const sendId = [[${currentUser.getId()}]];
 
     let selectedChatId = -1;
@@ -593,6 +796,48 @@
     stompClient.connect({}, function(frame) {
         console.log('Connected: ' + frame);
         const buttons = document.querySelectorAll(".chat-button")
+        const floatingBtn = document.getElementById('floatingBtn');
+        const chatInput = document.querySelector('.create-chat-input');
+        const createBtn = document.querySelector('.create-chat-button');
+
+        floatingBtn.addEventListener('click', function() {
+            chatInput.style.display = 'block';
+            createBtn.style.display = 'block';
+            chatInput.focus();
+        });
+
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const text = chatInput.value.trim();
+                if (text) {
+                    // Пустая функция для обработки введенного текста
+                    handleChatCreation(text);
+                    chatInput.value = '';
+                    chatInput.style.display = 'none';
+                    createBtn.style.display = 'none';
+                }
+            }
+        });
+
+        function handleChatCreation(chatName) {
+            let createChatInput = document.querySelector(".create-chat-input").value;
+            const chatRequest = {
+                name: null,
+                isGroupChat: false,
+                createdByUsername: nickname,
+                avatarUrl: null,
+                member1Username: nickname,
+                member2Username: createChatInput
+            };
+
+            stompClient.send("/app/send/create/chat", {}, JSON.stringify(chatRequest));
+        }
+
+
+
+
+
+
         buttons.forEach(button => {
             button.addEventListener('click', function() {
                 const chatInput = this.querySelector('.chatIdInput');
@@ -632,8 +877,6 @@
             });
         });
 
-
-
         function sendMessage() {
             const messageInput = document.querySelector('.message-input');
             const content = messageInput.value.trim();
@@ -646,8 +889,6 @@
                 };
 
                 stompClient.send("/app/send/message", {}, JSON.stringify(message));
-
-
 
                 addMessage(
                     message.content,

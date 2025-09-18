@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.denis.aestymes.models.Chat;
+import ru.denis.aestymes.models.ChatMember;
 import ru.denis.aestymes.models.Message;
 
 import java.util.List;
@@ -19,6 +20,12 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
             "ORDER BY c.updatedAt DESC")
     List<Chat> findChatsByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT c FROM Chat c WHERE " +
+            "(SELECT COUNT(cm) FROM c.members cm WHERE cm IN :members) = :memberCount " +
+            "AND SIZE(c.members) = :memberCount")
+    List<Chat> findChatsByExactMembers(@Param("members") List<ChatMember> members,
+                                       @Param("memberCount") long memberCount);
+    List<Chat> findByMembersContaining(ChatMember member);
     Optional<Chat> findChatById(Long id);
 
 //    List<Message> findByIdOrderByCreatedAtAsc(Long chatId);

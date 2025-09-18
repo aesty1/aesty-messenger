@@ -41,7 +41,7 @@ public class ChatController {
         List<Chat> chats = chatService.getUserChats(myUserService.getCurrentUserId(request));
         model.addAttribute("chats", chats);
 
-        model.addAttribute("nickname", myUserService.getUserById(myUserService.getCurrentUserId(request)));
+        model.addAttribute("nickname", myUserService.getUserById(myUserService.getCurrentUserId(request)).getUsername());
         model.addAttribute("currentUserId", myUserService.getCurrentUserId(request));
         model.addAttribute("currentUser", myUserService.getUserById(myUserService.getCurrentUserId(request)));
 
