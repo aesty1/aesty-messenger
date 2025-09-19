@@ -27,7 +27,7 @@ public class Message {
     @JoinColumn(name = "sender_id")
     private MyUser sender;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)

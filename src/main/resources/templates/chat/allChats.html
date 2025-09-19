@@ -610,11 +610,11 @@
 <!--                    <div class="unread-count">3</div>-->
                 </div>
             </button>
-            <div class="add-chat-container">
+            <div class="add-chat-container" id="add-chat-container">
                 <!-- Ваш существующий контент -->
                 <div>
-                    <input type="text" class="create-chat-input" style="display: none;">
-                    <button type="button" class="create-chat-button" style="display: none;">Create chat</button>
+                    <input type="text" class="create-chat-input" id="create-chat-input" style="display: none;">
+                    <button type="button" class="create-chat-button" id="create-chat-button" style="display: none;">Create chat</button>
                 </div>
 
                 <!-- Круглая кнопка в правом нижнем углу -->
@@ -637,9 +637,17 @@
                 <h5 class="current-chat-name">Emma Smith</h5>
                 <p class="current-chat-status">online</p>
             </div>
-            <div class="header-actions">
-                <button><i class="bi bi-search"></i></button>
-                <button><i class="bi bi-three-dots-vertical"></i></button>
+            <div class="add-chat-container" id="search-message-container">
+                <!-- Ваш существующий контент -->
+                <div>
+                    <input type="text" class="create-chat-input" id="search-message-input" style="display: none;">
+                    <button type="button" class="create-chat-button" id="search-message-button" style="display: none;">Find message</button>
+                </div>
+
+                <!-- Круглая кнопка в правом нижнем углу -->
+                <button type="button" class="floating-button" id="floatingBtn2">
+                    <i class="bi bi-search"></i>
+                </button>
             </div>
         </div>
 
@@ -794,17 +802,70 @@
 
 
     stompClient.connect({}, function(frame) {
-        console.log('Connected: ' + frame);
         const buttons = document.querySelectorAll(".chat-button")
         const floatingBtn = document.getElementById('floatingBtn');
-        const chatInput = document.querySelector('.create-chat-input');
-        const createBtn = document.querySelector('.create-chat-button');
+        const chatInput = document.querySelector('#create-chat-input');
+        const createBtn = document.querySelector('#create-chat-button');
+
+        const floatingBtn2 = document.getElementById('floatingBtn2');
+        const searchInput = document.querySelector('#search-message-input');
+        const searchButton = document.querySelector('#search-message-button');
+
+        floatingBtn2.addEventListener('click', function() {
+            searchInput.style.display = 'block';
+            createButton.style.display = 'block';
+            searchInput.focus();
+        });
 
         floatingBtn.addEventListener('click', function() {
             chatInput.style.display = 'block';
             createBtn.style.display = 'block';
             chatInput.focus();
         });
+
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const text = searchInput.value.trim();
+                if (text) {
+                    // Пустая функция для обработки введенного текста
+                    handleMessageFinding(text);
+                    searchInput.value = '';
+                    searchInput.style.display = 'none';
+                    searchButton.style.display = 'none';
+                }
+            }
+        });
+
+        function handleMessageFinding(content) {
+            let findMessageInput = document.querySelector("#search-message-input").value;
+            // const messagesContainer = document.getElementById('messages');
+            // messagesContainer.innerHTML = '';
+
+            const chatRequest = {
+                content: content,
+                chatId: selectedChatId
+            };
+
+            stompClient.send("/app/send/chat/message", {}, JSON.stringify(chatRequest));
+
+            // Подписываемся на тему для данного чата
+            stompClient.subscribe('/topic/chat/message/search', function(message) {
+                const msg = JSON.parse(message.body);
+                document.querySelectorAll('.messageElement').forEach(el => el.remove());
+
+
+                msg.forEach((element) => {
+                    console.log(element)
+                    addMessage(
+                        element.content,
+                        element.createdAt,
+                        element.senderId === currentUserId
+                    );
+                })
+
+            });
+
+        }
 
         chatInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -820,7 +881,8 @@
         });
 
         function handleChatCreation(chatName) {
-            let createChatInput = document.querySelector(".create-chat-input").value;
+
+            let createChatInput = document.querySelector("#create-chat-input").value;
             const chatRequest = {
                 name: null,
                 isGroupChat: false,
@@ -831,6 +893,8 @@
             };
 
             stompClient.send("/app/send/create/chat", {}, JSON.stringify(chatRequest));
+
+
         }
 
 
@@ -855,8 +919,20 @@
                 if (chatInput) {
                     selectedChatId = chatInput.value;
                         sendChatId(selectedChatId);
+                        const messageInput = document.querySelector(".message-input-container");
+                        const chatHeader = document.querySelector(".chat-header");
 
-                        // Подписываемся на тему для данного чата
+                        if(chatIsOpened === false ){
+                            messageInput.classList.add("active_type");
+                            messageInput.classList.remove('sleep_type');
+
+                            chatHeader.classList.add("active_type");
+                            chatHeader.classList.remove('sleep_type');
+
+
+                            chatIsOpened = true;
+                        }
+
                         stompClient.subscribe('/topic/chat/' + selectedChatId, function(message) {
                             const msg = JSON.parse(message.body);
                             document.querySelectorAll('.messageElement').forEach(el => el.remove());
@@ -871,6 +947,8 @@
                             })
 
                         });
+
+
                 } else {
                     console.log('Input не найден среди дочерних элементов');
                 }
@@ -889,6 +967,7 @@
                 };
 
                 stompClient.send("/app/send/message", {}, JSON.stringify(message));
+                console.log(message);
 
                 addMessage(
                     message.content,
@@ -914,13 +993,13 @@
     function addMessage(content, timestamp, isMyMessage) {
         const messagesContainer = document.getElementById('messages');
         const messageElement = document.createElement('div');
-        const messageInput = document.querySelector(".message-input-container");
-        const chatHeader = document.querySelector(".chat-header");
 
 
         messageElement.className="messageElement";
         messageElement.classList.add('message');
         messageElement.classList.add(isMyMessage ? 'my-message' : 'other-message');
+
+
 
         const date = new Date(timestamp);
         const formattedTime = ('0' + date.getHours()).slice(-2) + ':' +
@@ -931,16 +1010,7 @@
             <div class="message-time">${formattedTime}</div>
         `;
 
-        if(chatIsOpened === false ){
-            messageInput.classList.add("active_type");
-            messageInput.classList.remove('sleep_type');
 
-            chatHeader.classList.add("active_type");
-            chatHeader.classList.remove('sleep_type');
-
-
-            chatIsOpened = true;
-        }
 
 
         messagesContainer.appendChild(messageElement);

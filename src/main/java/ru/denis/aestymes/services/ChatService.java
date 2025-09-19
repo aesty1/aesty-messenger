@@ -44,11 +44,17 @@ public class ChatService {
         return chatRepository.findChatById(chatId).orElse(null);
     }
 
-    public void createChat(ChatRequest chatRequest) {
+    public void createChat(ChatRequest chatRequest) throws Exception {
+        // доделать чтобы можно было включать больше 2 людей в чат
         Chat chat = new Chat();
         List<ChatMember> members = new ArrayList<>();
         ChatMember chatMember1 = new ChatMember();
         ChatMember chatMember2 = new ChatMember();
+
+        if(chatRepository.existsByMembersContains(members)) {
+            throw new Exception("Chat already exists");
+        }
+
         chatRequest.setCreatedAt(LocalDateTime.now());
 
         chatMember1.setChat(chat);

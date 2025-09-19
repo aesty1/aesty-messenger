@@ -8,6 +8,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.denis.aestymes.dtos.ChatRequest;
+import ru.denis.aestymes.dtos.MessageContentRequest;
 import ru.denis.aestymes.dtos.MessageRequest;
 import ru.denis.aestymes.services.ChatService;
 import ru.denis.aestymes.services.MessageService;
@@ -25,13 +26,18 @@ public class ChatRestController {
     private ChatService chatService;
 
     @MessageMapping("/send/create/chat")
-    public void createChat(@Payload ChatRequest chatRequest) {
+    public void createChat(@Payload ChatRequest chatRequest) throws Exception {
         chatService.createChat(chatRequest);
     }
 
     @MessageMapping("/send")
     public void sendMessagesByChatId(@Payload Long chat_id) {
         messageService.sendMessagesByChatId(chat_id);
+    }
+
+    @MessageMapping("/send/chat/message")
+    public void findMessagesByContent(@Payload MessageContentRequest content) {
+        messageService.findByContent(content);
     }
 
 //    @MessageMapping("/send/chats")

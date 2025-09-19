@@ -5,10 +5,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import ru.denis.aestymes.dtos.ChatDTO;
-import ru.denis.aestymes.dtos.ChatMemberDTO;
-import ru.denis.aestymes.dtos.MessageDto;
-import ru.denis.aestymes.dtos.UserDTO;
+import ru.denis.aestymes.dtos.*;
 import ru.denis.aestymes.models.Chat;
 import ru.denis.aestymes.models.ChatMember;
 import ru.denis.aestymes.models.Message;
@@ -17,6 +14,7 @@ import ru.denis.aestymes.repositories.ChatRepository;
 import ru.denis.aestymes.repositories.MessageRepository;
 import ru.denis.aestymes.repositories.MyUserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,6 +71,17 @@ public class MessageService {
         MessageDto messageDto = convertToDTO(message);
 
         messagingTemplate.convertAndSend("/topic/chat/message/" + chatId, messageDto);
+    }
+
+    @Transactional
+    public void findByContent(MessageContentRequest message) {
+        List<Message> messages = messageRepository.findByContentContainingIgnoreCaseAndChat(message.getContent(), chatRepository.getReferenceById(message.getChatId()));
+
+        List<MessageDto> messageDTOs = messages.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        messagingTemplate.convertAndSend("/topic/chat/message/search", messageDTOs);
     }
 
     private MessageDto convertToDTO(Message message) {
