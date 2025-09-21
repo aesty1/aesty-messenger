@@ -14,6 +14,7 @@ public class ChatDTO {
     private String name;
     private UserDTO createdBy;
     private List<ChatMemberDTO> members;
+    private String avatarUrl;
 
     // конструкторы, геттеры, сеттеры
 }

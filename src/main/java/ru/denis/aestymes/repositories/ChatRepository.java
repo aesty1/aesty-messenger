@@ -29,5 +29,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     Optional<Chat> findChatById(Long id);
     Boolean existsByMembersContains(List<ChatMember> members);
 
+    List<Chat> findByName(String name);
+
 //    List<Message> findByIdOrderByCreatedAtAsc(Long chatId);
 }

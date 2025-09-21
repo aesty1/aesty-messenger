@@ -5,8 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import ru.denis.aestymes.dtos.ChatDTO;
-import ru.denis.aestymes.dtos.ChatRequest;
+import ru.denis.aestymes.dtos.*;
 import ru.denis.aestymes.models.Chat;
 import ru.denis.aestymes.models.ChatMember;
 import ru.denis.aestymes.models.MyUser;
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatService {
@@ -106,4 +106,54 @@ public class ChatService {
 //        }
 //
 //    }
+
+    @Transactional
+    public void findChatsByNameWS(ChatNameRequest request) {
+        List<Chat> chats = chatRepository.findByName(request.getChatName());
+
+
+        List<ChatDTO> dtos = chats.stream().map(this::convertChatToDTO).toList();
+
+        messagingTemplate.convertAndSend("/topic/chat/search", dtos);
+    }
+
+    private ChatDTO convertChatToDTO(Chat chat) {
+        ChatDTO dto = new ChatDTO();
+        dto.setId(chat.getId());
+        dto.setName(chat.getName());
+
+        if (chat.getCreatedBy() != null) {
+            dto.setCreatedBy(convertUserToDTO(chat.getCreatedBy()));
+        }
+
+        // Конвертируем members без обратных ссылок
+        if (chat.getMembers() != null) {
+            dto.setMembers(chat.getMembers().stream()
+                    .map(this::convertChatMemberToDTO)
+                    .collect(Collectors.toList()));
+        }
+
+        return dto;
+    }
+
+    private ChatMemberDTO convertChatMemberToDTO(ChatMember chatMember) {
+        ChatMemberDTO dto = new ChatMemberDTO();
+        dto.setId(chatMember.getId());
+
+        if (chatMember.getUser() != null) {
+            dto.setUser(convertUserToDTO(chatMember.getUser()));
+        }
+
+        // НЕ включаем обратную ссылку на chat!
+        return dto;
+    }
+
+    private UserDTO convertUserToDTO(MyUser user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setName(user.getName());
+        dto.setAvatarUrl(user.getAvatarUrl());
+        return dto;
+    }
 }

@@ -7,6 +7,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.denis.aestymes.dtos.ChatNameRequest;
 import ru.denis.aestymes.dtos.ChatRequest;
 import ru.denis.aestymes.dtos.MessageContentRequest;
 import ru.denis.aestymes.dtos.MessageRequest;
@@ -39,6 +40,12 @@ public class ChatRestController {
     public void findMessagesByContent(@Payload MessageContentRequest content) {
         messageService.findByContent(content);
     }
+
+    @MessageMapping("/send/chat/name")
+    public void findChatByName(@Payload ChatNameRequest request) {
+        chatService.findChatsByNameWS(request);
+    }
+
 
 //    @MessageMapping("/send/chats")
 //    public void sendChatsByUsername(@Payload MembersDto membersDto) {

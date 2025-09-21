@@ -499,6 +499,12 @@
             margin-top: auto; /* Помещаем снизу */
         }
 
+        .find-chat-container {
+            display: flex;
+            flex-direction: column;
+            margin-left: auto; /* Помещаем справа */
+        }
+
         .floating-button {
             background-color: #007bff; /* Синий цвет */
             border: none;
@@ -583,7 +589,20 @@
 <!--        </div>-->
 
 
+        <div class="find-chat-container" id="search-chat-container">
+            <!-- Ваш существующий контент -->
+            <div>
+                <input type="text" class="create-chat-input" id="search-chat-input" style="display: none;">
+                <button type="button" class="create-chat-button" id="search-chat-button" style="display: none;">Find chat</button>
+            </div>
+
+            <!-- Круглая кнопка в правом нижнем углу -->
+            <button type="button" class="floating-button" id="floatingBtn3">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
         <div class="chats-list" id="contentArea">
+
             <!-- Chat items -->
             <button style="background: none;
     border: none;
@@ -610,19 +629,20 @@
 <!--                    <div class="unread-count">3</div>-->
                 </div>
             </button>
-            <div class="add-chat-container" id="add-chat-container">
-                <!-- Ваш существующий контент -->
-                <div>
-                    <input type="text" class="create-chat-input" id="create-chat-input" style="display: none;">
-                    <button type="button" class="create-chat-button" id="create-chat-button" style="display: none;">Create chat</button>
-                </div>
 
-                <!-- Круглая кнопка в правом нижнем углу -->
-                <button type="button" class="floating-button" id="floatingBtn">
-                    <i class="fas fa-plus"></i>
-                </button>
+
+        </div>
+        <div class="add-chat-container" id="add-chat-container">
+            <!-- Ваш существующий контент -->
+            <div>
+                <input type="text" class="create-chat-input" id="create-chat-input" style="display: none;">
+                <button type="button" class="create-chat-button" id="create-chat-button" style="display: none;">Create chat</button>
             </div>
 
+            <!-- Круглая кнопка в правом нижнем углу -->
+            <button type="button" class="floating-button" id="floatingBtn">
+                <i class="fas fa-plus"></i>
+            </button>
         </div>
     </div>
 
@@ -811,6 +831,18 @@
         const searchInput = document.querySelector('#search-message-input');
         const searchButton = document.querySelector('#search-message-button');
 
+        const floatingBtn3 = document.getElementById('floatingBtn3');
+        const searchChatInput = document.querySelector('#search-chat-input');
+        const searchChatButton = document.querySelector('#search-chat-button');
+
+        const chatsList = document.querySelector(".chats-list");
+
+        floatingBtn3.addEventListener('click', function() {
+            searchChatInput.style.display = 'block';
+            searchChatButton.style.display = 'block';
+            searchChatInput.focus();
+        });
+
         floatingBtn2.addEventListener('click', function() {
             searchInput.style.display = 'block';
             createButton.style.display = 'block';
@@ -822,6 +854,89 @@
             createBtn.style.display = 'block';
             chatInput.focus();
         });
+
+        searchChatInput.addEventListener('keypress', function(e) {
+
+            if (e.key === 'Enter') {
+                const text = searchChatInput.value.trim();
+                if (text) {
+                    // Пустая функция для обработки введенного текста
+
+                    searchChatInput.value = '';
+                    searchChatInput.style.display = 'none';
+                    searchChatButton.style.display = 'none';
+
+                    handleChatFinding(text);
+                }
+            }
+        });
+
+        function handleChatFinding(content) {
+            let findMessageInput = document.querySelector("#search-chat-input").value;
+            // const messagesContainer = document.getElementById('messages');
+            // messagesContainer.innerHTML = '';
+
+            const chatRequest = {
+                chatName: content
+            };
+
+            stompClient.send("/app/send/chat/name", {}, JSON.stringify(chatRequest));
+
+
+            // Подписываемся на тему для данного чата
+            stompClient.subscribe('/topic/chat/search', function(message) {
+                chatsList.innerHTML = '';
+                const msg = JSON.parse(message.body);
+                msg.forEach((element) => {
+                    console.log(element)
+                    addChat(
+                        element.id,
+                        element.members,
+                        element.avatarUrl,
+                        element.name
+                    );
+                })
+
+            });
+
+        }
+
+        function addChat(id, members, avatarUrl, name) {
+            const messageElement = document.createElement('div');
+
+            // const date = new Date(lastMessageAt.getCreatedAt());
+            // const formattedTime = ('0' + date.getHours()).slice(-2) + ':' +
+            //     ('0' + date.getMinutes()).slice(-2);
+
+            messageElement.innerHTML = `
+            <button style="background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    cursor: pointer;
+    width: 95%"    class="chat-item active chat-button">
+                <div class="chat-avatar">ES</div>
+                <input class="chatIdInput" type="hidden" th:value="${id}">
+                <div class="chat-info">
+                    <div class="chat-name current-receiver-name">${members[0].user.name}</div>
+<!--                    <div class="chat-preview">See you tomorrow!</div>-->
+                </div>
+                <div class="chat-meta">
+<!--                    <div class="chat-time">-->
+<!--                        {#temporals.format(lastMessageAt.getCreatedAt(), 'HH:mm')}-->
+<!--                    </div>-->
+<!--                    <div class="unread-count">3</div>-->
+                </div>
+            </button>
+        `;
+
+
+
+
+            chatsList.appendChild(messageElement);
+            chatsList.scrollTop = chatsList.scrollHeight;
+        }
+
 
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -884,7 +999,7 @@
 
             let createChatInput = document.querySelector("#create-chat-input").value;
             const chatRequest = {
-                name: null,
+                name: createChatInput,
                 isGroupChat: false,
                 createdByUsername: nickname,
                 avatarUrl: null,
@@ -896,10 +1011,6 @@
 
 
         }
-
-
-
-
 
 
         buttons.forEach(button => {
